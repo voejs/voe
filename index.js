@@ -9,7 +9,7 @@ import Application from './framework/application';
 import Context from './framework/context';
 import Request from './framework/request';
 import Response from './framework/response';
-alert(1)
+
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 const originalPrototypes = {
   request: Request,
@@ -43,7 +43,7 @@ class pluginStructure {
 export default class Voe extends ApplicationService {
   constructor(cache) {
     super(!!cache.vars.config.config.popState);
-    this.router = new Router();
+    this.router = new Router(this, cache.vars.config.config.router);
     this._common = new Common();
     this.plugins = {};
     if (cache) {

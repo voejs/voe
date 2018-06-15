@@ -1,8 +1,10 @@
 import compose from 'koa-compose';
 import Layer from './layer';
+import is from 'is-type-of';
 
 export default class Router {
-  constructor(opts = {}) {
+  constructor(app, opts = {}) {
+    this.app = app;
     this.opts = opts;
     this.methods = this.opts.methods || ['GET'];
     this.params = {};
@@ -10,126 +12,58 @@ export default class Router {
   }
   
   /**
-   * Create `router.verb()` methods, where *verb* is one of the HTTP verbs such
-   * as `router.get()` or `router.post()`.
-   *
-   * Match URL patterns to callback functions or controller actions using `router.verb()`,
-   * where **verb** is one of the HTTP verbs such as `router.get()` or `router.post()`.
-   *
-   * Additionaly, `router.all()` can be used to match against all methods.
-   *
-   * ```javascript
-   * router
-   *   .get('/', function (ctx, next) {
-   *     ctx.body = 'Hello World!';
-   *   })
-   *   .post('/users', function (ctx, next) {
-   *     // ...
-   *   })
-   *   .put('/users/:id', function (ctx, next) {
-   *     // ...
-   *   })
-   *   .del('/users/:id', function (ctx, next) {
-   *     // ...
-   *   })
-   *   .all('/users/:id', function (ctx, next) {
-   *     // ...
-   *   });
-   * ```
-   *
-   * When a route is matched, its path is available at `ctx._matchedRoute` and if named,
-   * the name is available at `ctx._matchedRouteName`
-   *
-   * Route paths will be translated to regular expressions using
-   * [path-to-regexp](https://github.com/pillarjs/path-to-regexp).
-   *
-   * Query strings will not be considered when matching requests.
-   *
-   * #### Named routes
-   *
-   * Routes can optionally have names. This allows generation of URLs and easy
-   * renaming of URLs during development.
-   *
-   * ```javascript
-   * router.get('user', '/users/:id', function (ctx, next) {
-   *  // ...
-   * });
-   *
-   * router.url('user', 3);
-   * // => "/users/3"
-   * ```
-   *
-   * #### Multiple middleware
-   *
-   * Multiple middleware may be given:
-   *
-   * ```javascript
-   * router.get(
-   *   '/users/:id',
-   *   function (ctx, next) {
-   *     return User.findOne(ctx.params.id).then(function(user) {
-   *       ctx.user = user;
-   *       next();
-   *     });
-   *   },
-   *   function (ctx) {
-   *     console.log(ctx.user);
-   *     // => { id: 17, name: "Alex" }
-   *   }
-   * );
-   * ```
-   *
-   * ### Nested routers
-   *
-   * Nesting routers is supported:
-   *
-   * ```javascript
-   * var forums = new Router();
-   * var posts = new Router();
-   *
-   * posts.get('/', function (ctx, next) {...});
-   * posts.get('/:pid', function (ctx, next) {...});
-   * forums.use('/forums/:fid/posts', posts.routes(), posts.allowedMethods());
-   *
-   * // responds to "/forums/123/posts" and "/forums/123/posts/123"
-   * app.use(forums.routes());
-   * ```
-   *
-   * #### Router prefixes
-   *
-   * Route paths can be prefixed at the router level:
-   *
-   * ```javascript
-   * var router = new Router({
-   *   prefix: '/users'
-   * });
-   *
-   * router.get('/', ...); // responds to "/users"
-   * router.get('/:id', ...); // responds to "/users/:id"
-   * ```
-   *
-   * #### URL parameters
-   *
-   * Named route parameters are captured and added to `ctx.params`.
-   *
-   * ```javascript
-   * router.get('/:category/:title', function (ctx, next) {
-   *   console.log(ctx.params);
-   *   // => { category: 'programming', title: 'how-to-node' }
-   * });
-   * ```
-   *
-   * The [path-to-regexp](https://github.com/pillarjs/path-to-regexp) module is
-   * used to convert paths to regular expressions.
-   *
-   * @name get|put|post|patch|delete|del
-   * @memberof module:koa-router.prototype
-   * @param {String} path
-   * @param {Function=} middleware route middleware(s)
-   * @param {Function} callback route callback
-   * @returns {Router}
+   * formatter for string middleware
+   * 'a.b.c.d' -> app.middleware(controller).a.b.c.d
+   * @param object
+   * @param arg
+   * @returns {T}
    */
-  get(name, path, middleware) {
+  functional(object, arg) {
+    return arg.split('.').reduce((target, property) => {
+      if (target[property]) return target[property];
+      throw new Error('[koa-router transfer] can not find property of ' + property);
+    }, object);
+  }
+  
+  /**
+   * stringify middleware support:
+   *  1. node_modules
+   *  2. stringify
+   *
+   * @notice:
+   *  in node_module modal
+   *  if config[arg] is not exists then we know it with no params middleware
+   *  either which has params middleware
+   * @param arg
+   * @returns {*}
+   */
+  middlewareTransfer(arg) {
+    if (is.string(arg)) {
+      return this.functional(this.app.middleware, arg);
+    }
+    return arg;
+  }
+  
+  /**
+   * stringify controller support
+   * @param arg
+   * @returns {*}
+   */
+  controllerTransfer(arg) {
+    if (is.string(arg)) return this.functional(this.app.controller, arg);
+    return arg;
+  }
+  
+  get(...args) {
+    const length = args.length;
+    return this.router(...args.map((arg, index) => {
+      if (index === 0 && isRule(arg)) return arg;
+      if (index === length - 1) return this.controllerTransfer(arg);
+      return this.middlewareTransfer(arg);
+    }).filter(filter));
+  }
+  
+  router(name, path, middleware) {
     if (typeof path === 'string' || path instanceof RegExp) {
       middleware = Array.prototype.slice.call(arguments, 2);
     } else {
@@ -137,47 +71,25 @@ export default class Router {
       path = name;
       name = null;
     }
-    
+  
     this.register(
       path, ['get'],
       middleware, {
         name: name
       }
     );
-    
+  
     return this;
   }
   
-  /**
-   * Use given middleware.
-   *
-   * Middleware run in the order they are defined by `.use()`. They are invoked
-   * sequentially, requests start at the first middleware and work their way
-   * "down" the middleware stack.
-   *
-   * @example
-   *
-   * ```javascript
-   * // session middleware will run before authorize
-   * router
-   *   .use(session())
-   *   .use(authorize());
-   *
-   * // use middleware only with given path
-   * router.use('/users', userAuth());
-   *
-   * // or with an array of paths
-   * router.use(['/users', '/admin'], userAuth());
-   *
-   * app.use(router.routes());
-   * ```
-   *
-   * @param {String=} path
-   * @param {Function} middleware
-   * @param {Function=} ...
-   * @returns {Router}
-   */
-  use() {
+  use(...args) {
+    return this.inspect(...args.map((arg, index) => {
+      if (index === 0 && isRule(arg)) return arg;
+      return this.middlewareTransfer(arg);
+    }));
+  }
+  
+  inspect() {
     const router = this;
     const middleware = Array.prototype.slice.call(arguments);
     let path = '(.*)';
@@ -498,4 +410,8 @@ export default class Router {
   static url(path, params) {
     return Layer.prototype.url.call({path: path}, params);
   }
+}
+
+function isRule(arg) {
+  return (is.string(arg) && (arg[0] === '/' || arg === '*')) || arg instanceof RegExp;
 }
