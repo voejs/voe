@@ -415,3 +415,14 @@ export default class Router {
 function isRule(arg) {
   return (is.string(arg) && (arg[0] === '/' || arg === '*')) || arg instanceof RegExp;
 }
+
+/**
+ * filter empty fns
+ * @param fn
+ * @param index
+ * @returns {*}
+ */
+function filter(fn, index) {
+  if (index === 0) return fn;
+  return is.function(fn);
+}
