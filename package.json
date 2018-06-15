@@ -1,6 +1,6 @@
 {
   "name": "@voejs/voe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "voe framework for web which using vuejs",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,7 @@
   "homepage": "https://github.com/voejs/voe#readme",
   "dependencies": {
     "@evio/intersect": "^1.0.2",
+    "delegates": "^1.0.0",
     "is-type-of": "^1.2.0",
     "koa-compose": "^4.1.0",
     "path-to-regexp": "^2.2.1",

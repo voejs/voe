@@ -1,5 +1,6 @@
+const delegate = require('delegates');
 const toString = Object.prototype.toString;
-export default {
+const proto = {
   /**
    * throw an error
    * @param msg
@@ -25,8 +26,26 @@ export default {
   get store() {
     return this.app.store;
   }
-}
+};
+
+export default proto;
 
 function isError(msg) {
   return msg instanceof Error || toString.call(msg) === '[object Error]';
 }
+
+delegate(proto, 'response')
+  .method('redirect')
+  .method('replace')
+  .method('render');
+
+delegate(proto, 'request')
+  .access('search')
+  .access('method')
+  .access('query')
+  .access('path')
+  .access('url')
+  .getter('protocol')
+  .getter('host')
+  .getter('hostname')
+  .getter('secure');
