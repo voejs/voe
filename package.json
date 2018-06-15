@@ -1,0 +1,35 @@
+{
+  "name": "@voejs/voe",
+  "version": "1.0.0",
+  "description": "voe framework for web which using vuejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/voejs/voe.git"
+  },
+  "keywords": [
+    "voe",
+    "vue",
+    "vuex",
+    "mvc",
+    "frmework"
+  ],
+  "author": "evio",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/voejs/voe/issues"
+  },
+  "homepage": "https://github.com/voejs/voe#readme",
+  "dependencies": {
+    "@evio/intersect": "^1.0.2",
+    "is-type-of": "^1.2.0",
+    "koa-compose": "^4.1.0",
+    "path-to-regexp": "^2.2.1",
+    "super-vuex": "^1.0.14",
+    "vue": "^2.5.16"
+  }
+}
