@@ -21,6 +21,9 @@ export default {
   onerror(err) {
     if (null == err) return;
     this.app.emit('error', err, this);
+  },
+  get store() {
+    return this.app.store;
   }
 }
 
