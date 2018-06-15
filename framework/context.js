@@ -37,6 +37,7 @@ function isError(msg) {
 delegate(proto, 'response')
   .method('redirect')
   .method('replace')
+  .method('reload')
   .method('render');
 
 delegate(proto, 'request')

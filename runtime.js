@@ -3,4 +3,6 @@ import App from '@voe-cwd/App.vue';
 import * as Cache from '@voe-cache';
 const voe = new Voe(Cache);
 voe.use(voe.router.routes());
+voe.emit('beforeCreate');
 voe.listen(App);
+voe.emit('created');

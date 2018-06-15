@@ -29,4 +29,8 @@ export default class Response {
   render(view, data) {
     this.server.app.render(view, data);
   }
+  
+  realod() {
+    this.server.reload();
+  }
 }
