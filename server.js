@@ -9,20 +9,21 @@ import store from './store/index';
  */
 export default class Server {
   constructor(isPopState, app) {
+    const that = this;
     this.server = isPopState ? new popState(this) : new hashChange(this);
     this.store = store;
     Vue.component('render', Renderer);
     Vue.prototype.$server = this;
     Vue.prototype.$app = app;
     ['$redirect', '$replace', '$render', '$reload'].forEach(name => {
-      Vue.prototype.$redirect = function(...args) {
+      Vue.prototype[name] = function(...args) {
         if (!this.$ctx) throw new Error('Can not find `this.$ctx`');
         this.$ctx[name](...args);
       }
     });
     Object.defineProperty(Vue.prototype, '$ctx', {
       get() {
-        return this._ctx;
+        return that._ctx;
       }
     });
   }
