@@ -13,7 +13,7 @@ export default class Application extends Emitter {
     this.context = Object.create(Context);
     this.request = Object.create(Request);
     this.response = Object.create(Response);
-    this.server = new Server(type);
+    this.server = new Server(type, this);
   }
   
   listen(...args) {
@@ -31,6 +31,7 @@ export default class Application extends Emitter {
     const fn = compose(this._middleware);
     return (req, res) => {
       const ctx = this.createContext(req, res);
+      this.server._ctx = ctx;
       return this.handleRequest(ctx, fn);
     };
   }

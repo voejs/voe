@@ -8,11 +8,23 @@ import store from './store/index';
  * @since 1.0.0
  */
 export default class Server {
-  constructor(isPopState) {
+  constructor(isPopState, app) {
     this.server = isPopState ? new popState(this) : new hashChange(this);
     this.store = store;
-    Vue.prototype.$server = this;
     Vue.component('render', Renderer);
+    Vue.prototype.$server = this;
+    Vue.prototype.$app = app;
+    ['$redirect', '$replace', '$render', '$reload'].forEach(name => {
+      Vue.prototype.$redirect = function(...args) {
+        if (!this.$ctx) throw new Error('Can not find `this.$ctx`');
+        this.$ctx[name](...args);
+      }
+    });
+    Object.defineProperty(Vue.prototype, '$ctx', {
+      get() {
+        return this._ctx;
+      }
+    });
   }
   
   /**
@@ -22,7 +34,7 @@ export default class Server {
    */
   render(view, data) {
     this.store.system.commit('render', function(render) {
-      return render(view, { attrs: data });
+      return render(view, { props: data });
     });
   }
   
