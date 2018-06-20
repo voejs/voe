@@ -81,9 +81,12 @@ export default class Voe extends ApplicationService {
   }
   
   _components(map, components) {
-    for (const component in components) {
-      if (hasOwnProperty.call(components, component) && map[components[component]])
-      Vue.component(component, map[components[component]]);
+    for (let i = 0; i < components.length; i++) {
+      const component = components[i];
+      const target = map[component];
+      if (target && target.name) {
+        Vue.component(target.name, target);
+      }
     }
   }
   
