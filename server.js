@@ -15,15 +15,54 @@ export default class Server {
     Vue.component('render', Renderer);
     Vue.prototype.$server = this;
     Vue.prototype.$app = app;
+    this._bindMethods();
+    this._bindContext();
+    this._bindDirectives();
+  }
+  
+  _bindDirectives() {
+    const that = this;
+    ['redirect', 'replace', 'render', 'reload'].forEach(name => {
+      Vue.directive(name, {
+        bind(el) {
+          if (el.__click_Callback__) el.removeEventListener('click', el.__click_Callback__);
+          el.__click_Callback__ = () => {
+            const url = el.url;
+            if (url && that._ctx && that._ctx[name]) {
+              that._ctx[name](url);
+            }
+          };
+          el.addEventListener('click', el.__click_Callback__);
+        },
+        unbind(el) {
+          if (el.__click_Callback__) {
+            el.removeEventListener('click', el.__click_Callback__);
+          }
+        },
+        update(el, binding) {
+          el.url = binding.value;
+        },
+        componentUpdated(el, binding) {
+          el.url = binding.value;
+        }
+      })
+    });
+  }
+  
+  _bindContext() {
+    const that = this;
+    Object.defineProperty(Vue.prototype, '$ctx', {
+      get() {
+        return that._ctx;
+      }
+    });
+  }
+  
+  _bindMethods() {
     ['$redirect', '$replace', '$render', '$reload'].forEach(name => {
       Vue.prototype[name] = function(...args) {
         if (!this.$ctx) throw new Error('Can not find `this.$ctx`');
         this.$ctx[name](...args);
-      }
-    });
-    Object.defineProperty(Vue.prototype, '$ctx', {
-      get() {
-        return that._ctx;
       }
     });
   }
