@@ -22,17 +22,19 @@ export default class Server {
   
   _bindDirectives() {
     const that = this;
-    ['redirect', 'replace', 'render', 'reload'].forEach(name => {
+    ['redirect', 'replace', 'reload'].forEach(name => {
       Vue.directive(name, {
-        bind(el) {
+        bind(el, binding) {
           if (el.__click_Callback__) el.removeEventListener('click', el.__click_Callback__);
           el.__click_Callback__ = () => {
             const url = el.url;
+            if (name === 'reload' && that._ctx && that._ctx.reload) return that._ctx.reload();
             if (url && that._ctx && that._ctx[name]) {
               that._ctx[name](url);
             }
           };
           el.addEventListener('click', el.__click_Callback__);
+          el.url = binding.value;
         },
         unbind(el) {
           if (el.__click_Callback__) {
