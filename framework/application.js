@@ -14,6 +14,7 @@ export default class Application extends Emitter {
     this.request = Object.create(Request);
     this.response = Object.create(Response);
     this.server = new Server(type, this);
+    this.referer = null;
   }
   
   listen(...args) {
@@ -40,7 +41,10 @@ export default class Application extends Emitter {
     const res = ctx.res;
     res.statusCode = 404;
     const onerror = err => ctx.onerror(err);
-    const handleResponse = () => respond(ctx);
+    const handleResponse = () => {
+      respond(ctx);
+      this.referer = ctx.url;
+    };
     return fnMiddleware(ctx).then(handleResponse).catch(onerror);
   }
   
@@ -57,6 +61,7 @@ export default class Application extends Emitter {
     context.originalUrl = request.originalUrl = req.url;
     context.props = null;
     context.body = null;
+    context.referer = this.referer;
     return context;
   }
 }
