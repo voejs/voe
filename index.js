@@ -45,6 +45,7 @@ export default class Voe extends ApplicationService {
     super(!!cache.vars.config.config.popState);
     this.router = new Router(this, cache.vars.config.config.router);
     this._common = new Common();
+    this.store = Store;
     this.plugins = {};
     if (cache) {
       this.parse(cache);

@@ -11,6 +11,14 @@ export default class Router {
     this.stack = [];
   }
   
+  webview(...args) {
+    return this.inspect(...args.map((arg, index) => {
+      if (index === 0 && isRule(arg)) return arg;
+      if (index === args.length - 1) return this.webviewTransfer(arg);
+      return arg;
+    }));
+  }
+  
   /**
    * formatter for string middleware
    * 'a.b.c.d' -> app.middleware(controller).a.b.c.d
@@ -23,6 +31,14 @@ export default class Router {
       if (target[property]) return target[property];
       throw new Error('[koa-router transfer] can not find property of ' + property);
     }, object);
+  }
+  
+  webviewTransfer(arg) {
+    if (is.string(arg)) {
+      return ctx => ctx.body = this.functional(this.app.webview, arg);
+    } else {
+      return ctx => ctx.body = arg;
+    }
   }
   
   /**
@@ -71,14 +87,14 @@ export default class Router {
       path = name;
       name = null;
     }
-  
+    
     this.register(
       path, ['get'],
       middleware, {
         name: name
       }
     );
-  
+    
     return this;
   }
   
@@ -159,7 +175,7 @@ export default class Router {
       const path = ctx.req.pathname || '/';
       const matched = router.match(path, 'GET');
       let layerChain, layer, i;
-
+      
       if (ctx.matched) {
         ctx.matched.push.apply(ctx.matched, matched.path);
       } else {
@@ -167,7 +183,7 @@ export default class Router {
       }
       
       ctx.router = router;
-
+      
       if (!matched.route) return next();
       
       const matchedLayers = matched.pathAndMethod;
@@ -185,7 +201,7 @@ export default class Router {
         });
         return memo.concat(layer.stack);
       }, []);
-
+      
       return compose(layerChain)(ctx, next);
     };
     

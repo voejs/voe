@@ -1,6 +1,6 @@
 {
   "name": "@voejs/voe",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "voe framework for web which using vuejs",
   "main": "index.js",
   "scripts": {

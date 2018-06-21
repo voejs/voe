@@ -62,6 +62,7 @@ export default class Application extends Emitter {
     context.props = null;
     context.body = null;
     context.referer = this.referer;
+    context.requestStartTime = Date.now();
     return context;
   }
 }
