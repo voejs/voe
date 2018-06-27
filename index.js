@@ -10,7 +10,6 @@ import Context from './framework/context';
 import Request from './framework/request';
 import Response from './framework/response';
 
-const hasOwnProperty = Object.prototype.hasOwnProperty;
 const originalPrototypes = {
   request: Request,
   response: Response,
@@ -42,8 +41,10 @@ class pluginStructure {
 
 export default class Voe extends ApplicationService {
   constructor(cache) {
-    super(!!cache.vars.config.config.popState);
-    this.router = new Router(this, cache.vars.config.config.router);
+    const configs = Object.assign({}, ...cache.vars.config.map(cfg => cache.map[cfg]));
+    super(!!configs.popState);
+    this.config = configs;
+    this.router = new Router(this, configs.router);
     this._common = new Common();
     this.store = Store;
     this.plugins = {};
@@ -53,28 +54,23 @@ export default class Voe extends ApplicationService {
   }
   
   parse({ map, vars }) {
-    this._config(map, vars.config.config);
     this._controller(map, vars.controller);
     this._middlewares(map, vars.middleware);
     this._service(map, vars.service);
-    this._extendContext(map, vars.extend.context);
-    this._extendApplication(map, vars.extend.application);
-    this._extendRequest(map, vars.extend.request);
-    this._extendResponse(map, vars.extend.response);
+    this._extendContext(map, vars.extend_context);
+    this._extendApplication(map, vars.extend_application);
+    this._extendRequest(map, vars.extend_request);
+    this._extendResponse(map, vars.extend_response);
     this._components(map, vars.components);
     this._webstore(map, vars.webstore);
     this._webview(map, vars.webview);
     this._router(map, vars.router);
     this._error(map, vars.error);
-    this._plugin(map, vars.plugin, vars.config.pluginConfig);
-  }
-  
-  _config(map, configs) {
-    this.config = Object.assign({}, ...configs.map(cfg => map[cfg]));
+    this._plugin(map, vars.plugin, vars.plugin_config);
   }
   
   _plugin(map, list, config) {
-    const pluginConfigs = Object.assign({}, config.map(cfg => map[cfg] || {}));
+    const pluginConfigs = Object.assign({}, ...config.map(cfg => map[cfg] || {}));
     sortDependencies(list).forEach(cp => {
       this.plugins[cp.name] = new pluginStructure(this, cp, pluginConfigs);
       if (map[cp.module]) map[cp.module](this);
@@ -212,6 +208,6 @@ function sortDependencies(tree) {
     tree[i].name = i;
     m.push(tree[i]);
   }
-
+  
   return m.sort((a, b) => a.deep - b.deep);
 }

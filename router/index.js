@@ -35,7 +35,7 @@ export default class Router {
   
   webviewTransfer(arg) {
     if (is.string(arg)) {
-      return ctx => ctx.body = this.functional(this.app.webview, arg);
+      return ctx => ctx.body = this.functional(ctx.webview, arg);
     } else {
       return ctx => ctx.body = arg;
     }
