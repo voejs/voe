@@ -4,6 +4,7 @@ import Request from './request';
 import Response from './response';
 import compose from 'koa-compose';
 import Emitter from 'events';
+import Store from '../store/index';
 
 export default class Application extends Emitter {
   constructor(type) {
@@ -33,6 +34,10 @@ export default class Application extends Emitter {
     return (req, res) => {
       const ctx = this.createContext(req, res);
       this.server._ctx = ctx;
+      Store.system.commit('request', {
+        path: req.pathname,
+        query: req.query || {}
+      });
       return this.handleRequest(ctx, fn);
     };
   }

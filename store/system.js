@@ -3,5 +3,9 @@ const child = new ChildVuex('system');
 export default child;
 
 child.setState({
-  render: null
+  render: null,
+  request: {
+    path: null,
+    query: {}
+  }
 });
