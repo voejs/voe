@@ -81,8 +81,15 @@ export default class Voe extends ApplicationService {
     for (let i = 0; i < components.length; i++) {
       const component = components[i];
       const target = map[component];
-      if (target && target.name) {
-        Vue.component(target.name, target);
+      if (typeof target === 'function') {
+        const result = target(this);
+        if (result && result.name) {
+          Vue.component(result.name, result);
+        }
+      } else {
+        if (target && target.name) {
+          Vue.component(target.name, target);
+        }
       }
     }
   }
@@ -90,7 +97,14 @@ export default class Voe extends ApplicationService {
   _webstore(map, webstore) {
     webstore.forEach(store => {
       if (map[store]) {
-        Store.$connect.registerModule(map[store]);
+        if (typeof map[store] === 'function') {
+          const result = map[store](this);
+          if (result) {
+            Store.$connect.registerModule(result);
+          }
+        } else {
+          Store.$connect.registerModule(map[store]);
+        }
       }
     });
   }
