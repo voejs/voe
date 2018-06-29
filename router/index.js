@@ -35,9 +35,15 @@ export default class Router {
   
   webviewTransfer(arg) {
     if (is.string(arg)) {
-      return ctx => ctx.body = this.functional(ctx.webview, arg);
+      return async (ctx, next) => {
+        ctx.body = this.functional(ctx.webview, arg);
+        await next();
+      }
     } else {
-      return ctx => ctx.body = arg;
+      return async (ctx, next) => {
+        ctx.body = arg;
+        await next();
+      }
     }
   }
   
