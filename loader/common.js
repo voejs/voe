@@ -1,18 +1,8 @@
 import is from 'is-type-of';
 
 export default class Common {
-  controller(obj, options) {
-    if (
-      is.function(obj) &&
-      !is.generatorFunction(obj) &&
-      !is.class(obj) &&
-      !is.asyncFunction(obj)
-    ) obj = obj(options.inject);
-    
-    if (is.class(obj)) {
-      return this.wrapClass(obj);
-    }
-    return obj;
+  controller(obj) {
+    return this.wrapClass(obj);
   }
   
   wrapClass(Controller) {
