@@ -30,7 +30,11 @@ export default class Response {
     this.server.app.render(view, data);
   }
   
-  realod() {
+  /**
+   * res.reload
+   * 重载页面
+   */
+  reload() {
     this.server.reload();
   }
 }

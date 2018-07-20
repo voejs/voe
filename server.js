@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Renderer from './components/render';
 import { hashChange, popState } from "./history";
 import store from './store/index';
+import Voe from "./index";
 
 /**
  * 前端服务层
@@ -64,7 +65,7 @@ export default class Server {
     ['$redirect', '$replace', '$render', '$reload'].forEach(name => {
       Vue.prototype[name] = function(...args) {
         if (!this.$ctx) throw new Error('Can not find `this.$ctx`');
-        this.$ctx[name](...args);
+        this.$ctx[name.replace('$', '')](...args);
       }
     });
   }
@@ -91,6 +92,26 @@ export default class Server {
   }
   
   /**
+   * 销毁实例
+   */
+  destroy() {
+    this.vue.$destroy();
+    this.emit('destroyed');
+  }
+  
+  /**
+   * 停止监听
+   */
+  stop() {
+    if (!this.unBindListener) throw new Error('server is not created or not listened');
+    this.emit('beforeServerStop');
+    const unBind = this.unBindListener;
+    delete this.unBindListener;
+    unBind();
+    this.emit('serverStopped');
+  }
+  
+  /**
    * 监听服务
    * 返回一个可以停止监听的函数
    * @param App
@@ -99,15 +120,14 @@ export default class Server {
   listen(App) {
     const root = global.document.createElement('div');
     global.document.body.appendChild(root);
+    root.setAttribute('id', 'voe-app');
+    
     this.vue = new Vue({
       el: root,
       store: this.store,
       render: h => h(App || Renderer)
     });
-    const unBind = this.server.listen();
-    return () => {
-      this.vue.$destroy();
-      unBind();
-    }
+    
+    return this.unBindListener = this.server.listen();
   }
 }

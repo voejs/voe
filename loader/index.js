@@ -1,17 +1,8 @@
 import is from 'is-type-of';
+import defaultConfigs from './config';
+
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 const CLASSLOADER = Symbol('classLoader');
-const defaultConfigs = {
-  caseStyle: 'camel',
-  lowercaseFirst: true,
-  initializer: null,
-  call: true,
-  inject: null, // 一般指 `app` 对象
-  target: null, // inContext 模式下指 app.controller等 其他都指app
-  override: false,
-  inContext: false,
-  runtime: null
-};
 
 class ClassLoader {
   constructor(options) {
