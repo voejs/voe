@@ -2,7 +2,6 @@ import is from 'is-type-of';
 import defaultConfigs from './config';
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
-const CLASSLOADER = Symbol('classLoader');
 
 class ClassLoader {
   constructor(options) {
@@ -51,12 +50,12 @@ export default class Loader {
     
       Object.defineProperty(app.context, property, {
         get() {
-          if (!this[CLASSLOADER]) this[CLASSLOADER] = new Map();
-          const classLoader = this[CLASSLOADER];
-          let instance = classLoader.get(property);
+          if (!this.CLASSLOADER) this.CLASSLOADER = {};
+          const classLoader = this.CLASSLOADER;
+          let instance = classLoader[property];
           if (!instance) {
             instance = getInstance(target, this, runtime);
-            classLoader.set(property, instance);
+            classLoader[property] = instance;
           }
           return instance;
         }
