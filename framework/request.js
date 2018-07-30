@@ -24,6 +24,6 @@ export default {
     return this.req.protocol;
   },
   get secure() {
-    return 'https' == this.protocol;
+    return 'https' === this.protocol;
   }
 }
