@@ -110,7 +110,7 @@ export default class Voe extends ApplicationService {
   }
   
   _webview(map, webview) {
-    this.context.webview = getObject(webview, map);
+    this.context.webview = webview;
   }
   
   _router(map, router) {
