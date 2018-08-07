@@ -1,3 +1,4 @@
+import './polyfill';
 import ApplicationService from './framework/application';
 import intersect from '@evio/intersect';
 import Router from './router';
