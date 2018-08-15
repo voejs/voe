@@ -1,5 +1,6 @@
 import is from 'is-type-of';
 import defaultConfigs from './config';
+import isClass from './is-class';
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -87,8 +88,7 @@ export default class Loader {
   getExports(result) {
     const { initializer, call, inject } = this.options;
     if (initializer) result = initializer(result, this.options);
-    const isClass = result.toString().indexOf('Cannot call a class as a function') > -1;
-    if (isClass || is.class(result) || is.generatorFunction(result) || is.asyncFunction(result)) {
+    if (isClass(result) || is.generatorFunction(result) || is.asyncFunction(result)) {
       return result;
     }
     if (call && is.function(result) && inject) {
@@ -135,7 +135,7 @@ function getInstance(values, ctx, runtime) {
   const Class = values.EXPORTS ? values : null;
   let instance;
   if (Class) {
-    if (is.class(Class)) {
+    if (isClass(Class)) {
       if (is.function(runtime)) {
         instance = runtime(Class, ctx);
       } else {
