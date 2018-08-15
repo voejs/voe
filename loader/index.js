@@ -87,7 +87,8 @@ export default class Loader {
   getExports(result) {
     const { initializer, call, inject } = this.options;
     if (initializer) result = initializer(result, this.options);
-    if (is.class(result) || is.generatorFunction(result) || is.asyncFunction(result)) {
+    const isClass = result.toString().indexOf('Cannot call a class as a function') > -1;
+    if (isClass || is.class(result) || is.generatorFunction(result) || is.asyncFunction(result)) {
       return result;
     }
     if (call && is.function(result) && inject) {
