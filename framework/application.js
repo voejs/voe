@@ -42,14 +42,23 @@ export default class Application extends Emitter {
     };
   }
   
+  complete(callback) {
+    this.emit('composed', ctx);
+    if (typeof callback === 'function') callback();
+    this.emit('stop', ctx);
+  }
+  
   handleRequest(ctx, fnMiddleware) {
     const res = ctx.res;
     res.statusCode = 404;
-    const onerror = err => ctx.onerror(err);
+    const onerror = err => this.complete(() => ctx.onerror(err));
     const handleResponse = () => {
-      respond(ctx);
-      this.referer = ctx.url;
+      this.complete(() => {
+        respond(ctx);
+        this.referer = ctx.url;
+      });
     };
+    this.emit('start', ctx);
     return fnMiddleware(ctx).then(handleResponse).catch(onerror);
   }
   

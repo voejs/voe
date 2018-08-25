@@ -1,7 +1,9 @@
 import Voe from './index';
 import App from '@voe-cwd/App.vue';
 import * as Cache from '@voe-cache';
+import Application from '@voe-cwd/app';
 const voe = new Voe(Cache);
+if (typeof Application === 'function') Application(voe);
 voe.emit('beforeInjectRoutes');
 voe.use(voe.router.routes());
 voe.emit('beforeServerStart');
